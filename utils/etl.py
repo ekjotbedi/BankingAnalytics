@@ -15,21 +15,17 @@ import sqlite3
 
 import pandas as pd
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-# __file__ = utils/etl.py  →  os.path.dirname goes up to utils/
-# os.path.dirname again goes up to the project root (where data.py lives)
+# paths
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-
 DB_PATH  = os.path.join(PROJECT_ROOT, "output_generated", "transactions.db")
-SQL_PATH = os.path.join(PROJECT_ROOT, "analytic_queries.sql")   # SQL file is at project root
+SQL_PATH = os.path.join(PROJECT_ROOT, "analytic_queries.sql")
 OUT_PATH = os.path.join(PROJECT_ROOT, "output_generated", "features.csv")
 
 
 def run_sql_views(conn: sqlite3.Connection) -> None:
     """
     Read analytic_queries.sql and register the three VIEWs in SQLite.
-    Views are like saved queries — they compute on-the-fly when SELECTed.
-    Keeping SQL in a separate file lets you edit queries without touching Python.
+    Keeps SQL in a separate file edits queries without touching Python.
     """
     with open(SQL_PATH, "r") as f:
         sql_script = f.read()
@@ -49,17 +45,16 @@ def extract_features(conn: sqlite3.Connection) -> pd.DataFrame:
 def merge_extra_signals(df: pd.DataFrame, conn: sqlite3.Connection) -> pd.DataFrame:
     """
     Join the seasonality and at-risk views onto the main feature DataFrame.
-    Keeping these as separate views makes the SQL easier to read and test individually.
     """
     seasonality = pd.read_sql_query("SELECT * FROM v_seasonality;", conn)
-    df = df.merge(seasonality, on="client_id", how="left")   # left join: keep all clients
+    df = df.merge(seasonality, on="client_id", how="left")   # keeps all clients
 
     at_risk = pd.read_sql_query(
         "SELECT client_id, at_risk_flag FROM v_at_risk_signal;", conn
     )
     df = df.merge(at_risk, on="client_id", how="left")
 
-    # Clients with no recent transactions get worst-case defaults
+    # Clients with no recent transactions ae assigned worst-case defaults
     df["at_risk_flag"]       = df["at_risk_flag"].fillna(1)
     df["q4_seasonal_index"]  = df["q4_seasonal_index"].fillna(1.0)
 
@@ -70,9 +65,8 @@ def merge_extra_signals(df: pd.DataFrame, conn: sqlite3.Connection) -> pd.DataFr
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Clean the feature DataFrame:
-      • Drop rows missing critical columns (very sparse clients)
-      • Cap outliers at 1st / 99th percentile so one mega-client
-        doesn't skew the cluster centroids
+      • Drop rows missing critical columns
+      • Cap outliers at 1st / 99th percentile so one mega-client doesn't skew the cluster centroids
     """
     critical_cols = ["avg_monthly_volume", "avg_monthly_txn_count", "net_flow"]
     before = len(df)
@@ -80,7 +74,7 @@ def clean_features(df: pd.DataFrame) -> pd.DataFrame:
     if len(df) < before:
         print(f"[!] Dropped {before - len(df)} clients with missing core features")
 
-    # Clip extreme values — prevents outliers from dominating K-Means distance calculations
+    # clip extreme values — prevents outliers from dominating K-Means distance calculations
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     for col in numeric_cols:
         df[col] = df[col].clip(
@@ -101,8 +95,7 @@ def save_features(df: pd.DataFrame) -> None:
 
 def run_etl() -> pd.DataFrame:
     """
-    Orchestrator — runs all ETL steps in order.
-    Returns the final DataFrame so run_pipeline.py can pass it along if needed.
+    Orchestrator — runs all ETL steps in order and returns the final DataFrame
     """
     conn = sqlite3.connect(DB_PATH)
     try:
@@ -112,13 +105,10 @@ def run_etl() -> pd.DataFrame:
         df = clean_features(df)
         save_features(df)
     finally:
-        conn.close()   # always close even if an error occurs mid-way
+        conn.close()
     return df
 
-
 if __name__ == "__main__":
-    # You can run this file directly to test just the ETL step:
-    # python utils/etl.py     (run from the PROJECT ROOT folder)
     print("Running ETL pipeline…")
     df = run_etl()
     print("\nSample output:")
