@@ -3,9 +3,9 @@ utils/brief_generator.py
 ------------------------
 Auto-generates the executive brief from cluster statistics.
 
-Reads from:   output_generated/clustered_clients.csv
-Writes to:    output_generated/executive_brief.md
-              output_generated/executive_brief.pdf
+Reads from: output_generated/clustered_clients.csv
+Writes to: output_generated/executive_brief.md
+           output_generated/executive_brief.pdf
 
 Called automatically by run_pipeline.py.
 """
@@ -22,74 +22,59 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer,
     Table, TableStyle, HRFlowable,
 )
-
-# ── Paths — this file lives in utils/, so go up one level to reach project root ──
+# paths
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 OUT_DIR      = os.path.join(PROJECT_ROOT, "output_generated")
 CLUSTERED    = os.path.join(OUT_DIR, "clustered_clients.csv")
 MD_PATH      = os.path.join(OUT_DIR, "executive_brief.md")
 PDF_PATH     = os.path.join(OUT_DIR, "executive_brief.pdf")
 
-# ── Segment narratives — filled with real cluster stats to produce readable prose ──
+# Segment narratives — filled with real stats to produce readable prose
 NARRATIVES = {
     "High-Growth": (
         "High-Growth clients demonstrate consistently elevated transaction volumes "
         "and a strong positive net cash flow, indicating healthy revenue generation. "
-        "Their high transaction frequency suggests deep engagement with RBC commercial "
-        "banking products. <b>Recommendation:</b> Proactively offer credit facilities, "
-        "investment products, and treasury management services to capture wallet share "
-        "before competitors do."
+        "Their high transaction frequency suggests deep engagement with commercial "
+        "banking products."
     ),
     "At-Risk": (
         "At-Risk clients show a meaningful decline in recent transaction frequency and "
         "a high number of days since last activity. Their net flow has deteriorated, "
         "signalling potential cash flow stress or migration to a competitor. "
-        "<b>Recommendation:</b> Assign a relationship manager to reach out within 14 days. "
-        "Offer tailored solutions such as revolving credit lines or cash flow forecasting "
-        "tools to re-engage and retain."
     ),
     "Seasonal": (
         "Seasonal clients exhibit significant Q4 volume spikes relative to the rest of "
         "the year, consistent with retail, hospitality, and agricultural cycles. "
-        "<b>Recommendation:</b> Introduce flexible seasonal credit products ahead of peak "
-        "periods. Pre-emptive Q3 outreach will strengthen loyalty and reduce the likelihood "
-        "of clients seeking bridge financing elsewhere."
     ),
     "Stable": (
         "Stable clients maintain predictable, low-volatility transaction patterns. "
         "While not high-growth, their reliability makes them cost-efficient to serve. "
-        "<b>Recommendation:</b> Automate routine servicing. Introduce digital-first products "
-        "(automated payroll, online FX) to deepen engagement without proportional RM cost."
     ),
     "Outlier": (
         "Outlier clients display atypical transaction patterns that do not conform to "
         "any identified segment. This may indicate unique business models or accounts "
         "requiring compliance review. "
-        "<b>Recommendation:</b> Flag for manual relationship manager review. Verify KYC data "
-        "and assess whether the account fits RBC's commercial risk appetite."
     ),
 }
 
-
 def compute_segment_stats(df: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate key metrics per segment for use in tables and narratives."""
+    """aggregate key metrics per segment"""
     stats = (
         df.groupby("segment")
         .agg(
-            count        =("client_id", "count"),
-            avg_vol      =("avg_monthly_volume", "mean"),
-            avg_freq     =("avg_monthly_txn_count", "mean"),
+            count =("client_id", "count"),
+            avg_vol =("avg_monthly_volume", "mean"),
+            avg_freq =("avg_monthly_txn_count", "mean"),
             avg_net_flow =("net_flow", "mean"),
             pct_at_risk  =("at_risk_flag", "mean"),
         )
         .reset_index()
     )
-    stats["avg_vol"]      = stats["avg_vol"].round(0).astype(int)
-    stats["avg_freq"]     = stats["avg_freq"].round(1)
+    stats["avg_vol"] = stats["avg_vol"].round(0).astype(int)
+    stats["avg_freq"] = stats["avg_freq"].round(1)
     stats["avg_net_flow"] = stats["avg_net_flow"].round(0).astype(int)
-    stats["pct_at_risk"]  = (stats["pct_at_risk"] * 100).round(1)
+    stats["pct_at_risk"] = (stats["pct_at_risk"] * 100).round(1)
     return stats
-
 
 def build_markdown(df: pd.DataFrame, stats: pd.DataFrame) -> str:
     """Build the full Markdown brief as a string."""
@@ -133,9 +118,8 @@ def build_markdown(df: pd.DataFrame, stats: pd.DataFrame) -> str:
         "2. **ETL:** Python + SQLite. SQL CTEs computed per-client KPIs.",
         "3. **Scaling:** StandardScaler (mean=0, std=1).",
         "4. **Reduction:** PCA to 2 components for visualisation.",
-        "5. **Clustering:** K-Means (optimal K via silhouette) + DBSCAN outliers.",
-        "", "---",
-        "*Portfolio project — Python · SQL · Scikit-learn · Streamlit · Plotly*",
+        "5. **Clustering:** K-Means + DBSCAN outliers.",
+        "", "---"
     ]
     return "\n".join(lines)
 
@@ -143,37 +127,36 @@ def build_markdown(df: pd.DataFrame, stats: pd.DataFrame) -> str:
 def build_pdf(df: pd.DataFrame, stats: pd.DataFrame) -> None:
     """Generate a professional PDF brief using ReportLab's Platypus engine."""
     os.makedirs(OUT_DIR, exist_ok=True)
-    doc    = SimpleDocTemplate(PDF_PATH, pagesize=letter,
+    doc = SimpleDocTemplate(PDF_PATH, pagesize=letter,
                                rightMargin=0.75*inch, leftMargin=0.75*inch,
                                topMargin=0.75*inch, bottomMargin=0.75*inch)
     styles = getSampleStyleSheet()
 
-    # Custom styles with RBC navy blue (#003168)
+    # custom styles
     title_style = ParagraphStyle("Title", parent=styles["Heading1"],
                                  fontSize=20, textColor=colors.HexColor("#003168"), spaceAfter=6)
-    h2_style    = ParagraphStyle("H2", parent=styles["Heading2"],
+    h2_style = ParagraphStyle("H2", parent=styles["Heading2"],
                                  fontSize=13, textColor=colors.HexColor("#003168"),
                                  spaceBefore=14, spaceAfter=4)
-    h3_style    = ParagraphStyle("H3", parent=styles["Heading3"],
+    h3_style = ParagraphStyle("H3", parent=styles["Heading3"],
                                  fontSize=11, textColor=colors.HexColor("#003168"),
                                  spaceBefore=10, spaceAfter=3)
-    body_style  = ParagraphStyle("Body", parent=styles["Normal"],
+    body_style = ParagraphStyle("Body", parent=styles["Normal"],
                                  fontSize=10, leading=14, spaceAfter=8)
-    meta_style  = ParagraphStyle("Meta", parent=styles["Normal"],
+    meta_style = ParagraphStyle("Meta", parent=styles["Normal"],
                                  fontSize=9, textColor=colors.grey, spaceAfter=2)
 
     today = datetime.today().strftime("%B %d, %Y")
     total = len(df)
     story = []   # list of flowables rendered top-to-bottom
 
-    # Title block
+    # title block
     story.append(Paragraph("Client Segment Intelligence Brief", title_style))
     story.append(Paragraph(f"Commercial Banking Analytics  |  {today}", meta_style))
-    story.append(Paragraph(f"Data window: Jan 2023 – Dec 2024  |  {total:,} clients", meta_style))
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#003168")))
     story.append(Spacer(1, 0.15*inch))
 
-    # Summary table
+    # summary table
     story.append(Paragraph("Segment Overview", h2_style))
     tbl_data = [["Segment", "Clients", "Avg Monthly Vol", "Avg Txns/Mo", "Net Flow", "At-Risk %"]]
     for _, r in stats.iterrows():
@@ -196,12 +179,12 @@ def build_pdf(df: pd.DataFrame, stats: pd.DataFrame) -> None:
     story.append(tbl)
     story.append(Spacer(1, 0.2*inch))
 
-    # Per-segment narratives
+    # per-segment narratives
     story.append(Paragraph("Segment Profiles & Recommendations", h2_style))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey))
     story.append(Spacer(1, 0.1*inch))
     for _, r in stats.iterrows():
-        seg       = r["segment"]
+        seg = r["segment"]
         narrative = NARRATIVES.get(seg, "")
         story.append(Paragraph(
             f"{seg}  <font size='9' color='grey'>({r['count']:,} clients — "
@@ -219,7 +202,7 @@ def generate_brief() -> None:
         raise FileNotFoundError(
             f"Clustered data not found at:\n  {CLUSTERED}\nRun run_pipeline.py first."
         )
-    df    = pd.read_csv(CLUSTERED)
+    df = pd.read_csv(CLUSTERED)
     stats = compute_segment_stats(df)
 
     md = build_markdown(df, stats)
@@ -229,10 +212,7 @@ def generate_brief() -> None:
 
     build_pdf(df, stats)
 
-
 if __name__ == "__main__":
-    # Run just the brief step:
-    # python utils/brief_generator.py     (run from PROJECT ROOT)
     print("Generating executive brief…")
     generate_brief()
     print("Done.")
