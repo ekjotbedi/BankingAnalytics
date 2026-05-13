@@ -79,7 +79,7 @@ def run_pipeline_if_needed() -> None:
         generate_brief()
 
         st.success("Pipeline complete — loading dashboard!")
-        st.rerun()   # refreshes the page
+        st.rerun() # refreshes the page
 
 
 # page configuration
@@ -248,7 +248,7 @@ def main() -> None:
         )
         st.plotly_chart(fig_elbow, use_container_width=True)
 
-    # Row 2: Segment KPI bar charts
+    # Segment KPI bar charts
     st.markdown("### Segment KPI Comparison")
     st.caption("Aggregated averages per segment for the filtered view.")
 
@@ -301,7 +301,7 @@ def main() -> None:
                               paper_bgcolor="white", margin=dict(l=10, r=10, t=40, b=10))
         st.plotly_chart(fig_net, use_container_width=True)
 
-    # Row 3: Client lookup table
+    # client lookup table
     st.markdown("### Client Lookup")
     st.caption("Click any column header to sort. Use the sidebar filters to narrow results.")
 
@@ -317,7 +317,7 @@ def main() -> None:
 
     st.dataframe(table_df, use_container_width=True, height=350)
 
-    # Row 4: Portfolio pie + download buttons
+    # portfolio pie + download buttons
     p1, p2 = st.columns([2, 1])
 
     with p1:
@@ -372,7 +372,6 @@ def main() -> None:
         "Python · SQL · Scikit-learn · Streamlit · Plotly  |  "
         "Data: synthetic (Faker)"
     )
-
 
 if __name__ == "__main__":
     main()
