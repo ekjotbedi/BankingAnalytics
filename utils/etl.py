@@ -7,7 +7,7 @@ Reads from:   output_generated/transactions.db  (created by data.py)
               analytic_queries.sql               (SQL views in project root)
 Writes to:    output_generated/features.csv     (ML-ready feature matrix)
 
-Called automatically by run_pipeline.py — you don't need to run this directly.
+Called automatically by run_pipeline.py
 """
 
 import os
