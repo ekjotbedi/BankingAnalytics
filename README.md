@@ -1,8 +1,7 @@
 # Customer Transaction Behaviour Clustering
 ### A Full-Stack Data Analytics Portfolio Project
 
-> Built to demonstrate skills in **Python · SQL · Machine Learning · Streamlit · Business Intelligence**  
-> Targeted at: *RBC Commercial Banking — Data Analyst / Client Insights Analyst Co-op 2026*
+> Built to demonstrate skills in **Python · SQL · Machine Learning · Streamlit · Business Intelligence**
 
 ---
 
@@ -18,41 +17,6 @@ This project ingests synthetic Canadian SME (Small & Medium Enterprise) bank tra
 | **At-Risk** | Declining activity, high days since last txn | Proactive relationship manager outreach |
 | **Seasonal** | Q4 volume spikes, high volatility | Pre-emptive seasonal credit line offers |
 | **Stable** | Consistent, low-volatility activity | Automate servicing, introduce digital products |
-
----
-
-## Project Structure
-
-```
-rbc_transaction_clustering/
-│
-├── data/
-│   ├── generate_data.py        # Step 1: synthetic data → SQLite
-│   ├── transactions.db         # SQLite database (generated)
-│   ├── features.csv            # ML feature matrix (generated)
-│   ├── elbow_scores.csv        # K-selection scores (generated)
-│   └── clustered_clients.csv   # Labelled clients (generated)
-│
-├── sql/
-│   └── analytics_queries.sql   # Step 2: SQL CTEs & views for feature engineering
-│
-├── utils/
-│   ├── etl.py                  # Step 2: runs SQL views, builds feature DataFrame
-│   └── brief_generator.py      # Step 4: Markdown + PDF executive brief
-│
-├── ml/
-│   └── cluster.py              # Step 3: StandardScaler → PCA → K-Means → DBSCAN
-│
-├── app/
-│   └── dashboard.py            # Streamlit interactive dashboard
-│
-├── output/
-│   ├── executive_brief.md      # Markdown brief (generated)
-│   └── executive_brief.pdf     # PDF brief (generated)
-│
-├── run_pipeline.py             # Master script: runs all 4 steps in order
-└── requirements.txt
-```
 
 ---
 
@@ -123,29 +87,15 @@ Open `http://localhost:8501` in your browser.
 
 ---
 
-## Resume Bullet Points
-
-> Copy-paste these into your resume under this project:
-
-- Engineered a **full-stack data pipeline** ingesting 12,000+ synthetic SME transactions into SQLite, processing them with SQL CTEs and window functions to extract 8 behavioural KPIs per client
-- Applied **K-Means + DBSCAN** unsupervised clustering (scikit-learn) with PCA dimensionality reduction and silhouette-score model selection to segment 500 commercial banking clients into 4 actionable profiles
-- Built an **interactive Streamlit dashboard** (Plotly charts, sidebar filters, KPI cards) enabling relationship managers to explore segments, identify at-risk clients, and download executive reports
-- Auto-generated an **executive PDF brief** (ReportLab) translating cluster statistics into business narratives and recommendations — mirroring analyst deliverables in a commercial banking environment
-
----
-
 ## Skills Demonstrated
 
-| Skill | Where |
-|-------|-------|
-| Python (Pandas, NumPy) | All pipeline steps |
-| SQL (CTEs, window functions, views) | `sql/analytics_queries.sql` |
-| Machine Learning (unsupervised) | `ml/cluster.py` |
-| Data pipeline / ETL | `utils/etl.py` |
-| Business Intelligence / dashboards | `app/dashboard.py` |
-| Data storytelling | `utils/brief_generator.py` |
-| Version control ready | Clean modular structure |
+Python (Pandas, NumPy) | All pipeline steps
+SQL (CTEs, window functions, views) | `sql/analytics_queries.sql`
+Machine Learning (unsupervised) | `ml/cluster.py`
+Data pipeline / ETL | `utils/etl.py`
+Business Intelligence / dashboards | `app/dashboard.py`
+Data storytelling | `utils/brief_generator.py`
+Version control ready | Clean modular structure
 
 ---
-
-*Data is 100% synthetic — generated using the Faker library. No real client data was used.*
+Data is 100% synthetic — generated using the Faker library. No real client data was used.
