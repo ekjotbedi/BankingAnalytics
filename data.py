@@ -5,16 +5,12 @@ Generates synthetic Canadian SME bank transaction data and seeds a SQLite
 database with two tables: clients and transactions.
 
 Output:  output_generated/transactions.db
-
-Run this first before any other script, OR just run run_pipeline.py which
-calls this automatically.
 """
 
 import sqlite3
 import random
 import os
 from datetime import datetime, timedelta
-
 import pandas as pd
 from faker import Faker
 
@@ -44,7 +40,7 @@ CATEGORIES = [
     "Rent / Lease", "Utilities", "Equipment", "Tax Payment", "Loan Repayment", "Insurance", "Transfer"
 ]
 
-INCOMING = {"Client Revenue", "Transfer"}   # add money; everything else removes it
+INCOMING = {"Client Revenue", "Transfer"}
 
 def random_date(start: datetime, end: datetime) -> datetime:
     """returns a random datetime between start and end"""
@@ -57,7 +53,7 @@ def random_date(start: datetime, end: datetime) -> datetime:
 def generate_clients(n: int) -> pd.DataFrame:
     """
     builds a dataFrame of n fictional clients.
-    each client is assigned a tier (small / mid / large) that tells how big their transactions can be.
+    each client is assigned a tier that tells how big their transactions can be.
     """
     clients = []
     for i in range(n):
@@ -109,7 +105,6 @@ def generate_transactions(clients_df: pd.DataFrame, n: int) -> pd.DataFrame:
         if txn_date.month in (10, 11, 12):
             amount = round(amount * random.uniform(1.1, 1.3), 2)
 
-        # ~3% of transactions are declined
         if random.random() < 0.03:
             amount = -abs(amount)
 
@@ -127,17 +122,15 @@ def generate_transactions(clients_df: pd.DataFrame, n: int) -> pd.DataFrame:
 
 def seed_database(clients_df: pd.DataFrame, transactions_df: pd.DataFrame) -> None:
     """
-    Write both DataFrames into the SQLite database.
-    SQLite creates the .db file automatically if it doesn't exist.
-    Indexes on client_id and date make joins in etl.py much faster.
+    write both DataFrames into the SQLite database
+    indexes on client_id and date make joins in etl.py much faster
     """
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)   # create output_generated/ if missing
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)   # creates output_generated/ if missing
     conn = sqlite3.connect(DB_PATH)
 
     clients_df.to_sql("clients", conn, if_exists="replace", index=False)
     transactions_df.to_sql("transactions", conn, if_exists="replace", index=False)
 
-    # Indexes speed up the SQL joins and WHERE clauses in analytics_queries.sql
     conn.execute("CREATE INDEX IF NOT EXISTS idx_txn_client ON transactions(client_id);")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_txn_date   ON transactions(date);")
     conn.commit()
@@ -146,7 +139,6 @@ def seed_database(clients_df: pd.DataFrame, transactions_df: pd.DataFrame) -> No
     print(f"[✓] Database saved:   {DB_PATH}")
     print(f"    Clients:          {len(clients_df):,}")
     print(f"    Transactions:     {len(transactions_df):,}")
-
 
 if __name__ == "__main__":
     print("Generating data…")
