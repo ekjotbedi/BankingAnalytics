@@ -90,11 +90,17 @@ Open `http://localhost:8501` in your browser.
 ## Skills Used
 
 Python (Pandas, NumPy): All pipeline steps
+
 SQL (CTEs, window functions, views): `sql/analytics_queries.sql`
+
 Machine Learning (unsupervised): `ml/cluster.py`
+
 Data pipeline / ETL:  `utils/etl.py`
+
 Business Intelligence / dashboards: `app/dashboard.py`
+
 Data storytelling: `utils/brief_generator.py`
+
 Version control ready: Clean modular structure
 
 ---
